@@ -1,0 +1,709 @@
+main.py:
+-------
+from tkinter import *
+from PIL import Image, ImageTk
+import time, threading
+from tkinter import font
+import tkinter as tk
+
+
+# Create a window
+window = Tk()
+
+# Set the window size
+window.geometry("600x900")
+
+# Set the background color of the window
+window.configure(bg = "white")
+
+# Create and place a canvas on the window
+canvas = Canvas(window, width=600, height=900, bg="light blue")
+canvas.place(x=0, y=0)
+
+
+fortniteFont = font.Font(family="Impact", size=11, weight=font.BOLD, slant=font.ITALIC)
+
+
+imageCookie = Image.open('vBucks.png').convert('RGBA')
+resizedCookie = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookie = ImageTk.PhotoImage(resizedCookie)
+imgCookie = canvas.create_image(250, 200, image = changedCookie)
+canvas.itemconfig(imgCookie, state='hidden')
+
+resizedCookieS3 = imageCookie.resize((100, 100), Image.Resampling.LANCZOS)
+changedCookieS3 = ImageTk.PhotoImage(resizedCookieS3)
+imgCookieS3 = canvas.create_image(250, 200, image = changedCookieS3)
+canvas.itemconfig(imgCookieS3, state='hidden')
+
+resizedCookieS2 = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookieS2 = ImageTk.PhotoImage(resizedCookieS2)
+imgCookieS2 = canvas.create_image(250, 200, image = changedCookieS2)
+canvas.itemconfig(imgCookieS2, state='hidden')
+
+resizedCookieS1 = imageCookie.resize((200, 200), Image.Resampling.LANCZOS)
+changedCookieS1 = ImageTk.PhotoImage(resizedCookieS1)
+imgCookieS1 = canvas.create_image(250, 200, image = changedCookieS1)
+canvas.itemconfig(imgCookieS1, state='normal')
+
+clickAmount = 1
+money = 0
+moneyText = StringVar()
+moneyText.set("$ " + str(money))
+moneyLabel = Label(window, textvariable=moneyText,
+                    fg="black", bg="light Grey", width=20, font=fortniteFont)
+moneyLabel.place(x = 150, y = 2)
+
+
+def cookieClicked(e):
+    global imgCookie
+    global clickAmount
+    global money
+    global cookieStageNum
+    if e.num == 1:
+
+        runClickAnimation()
+        money = int(money) + int(clickAmount)
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        
+cookieStageNum = 1
+def runClickAnimation():
+    global cookieStageNum
+
+    if cookieStageNum == 1:
+        canvas.itemconfig(imgCookie, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+    
+    if cookieStageNum == 2:
+        canvas.itemconfig(imgCookieS1, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 3:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS3, state='normal')
+    
+    if cookieStageNum == 4:
+        canvas.itemconfig(imgCookieS3, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 5:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+
+  
+    cookieStageNum = cookieStageNum + 1
+    if cookieStageNum == 6:
+        cookieStageNum = 1
+    else:
+        threading.Timer(0.05, runClickAnimation).start()
+
+def doTimerStuff():
+    global money
+
+    money = money + 1
+    moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+
+    # Keep calling this function over and over
+    threading.Timer(1.0, doTimerStuff).start()
+
+canvas.tag_bind(imgCookieS1, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS2, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS3, "<Button-1>", cookieClicked)
+
+imagePickaxe1 = Image.open('Pickaxe1.png').convert('RGBA')
+resizedPickaxe1 = imagePickaxe1.resize((50, 75), Image.Resampling.LANCZOS)
+changedPickaxe1 = ImageTk.PhotoImage(resizedPickaxe1)
+imgPickaxe1 = canvas.create_image(140, 130, image = changedPickaxe1)
+canvas.itemconfig(imgPickaxe1, state='hidden')
+
+
+def pickaxeUpgrade():
+    
+    global money
+    global pickUpCost
+    global clickAmount
+    if money >= pickUpCost:
+        canvas.itemconfig(imgPickaxe1, state='normal')
+        money = int(money) - int(pickUpCost)
+        clickAmount = int(clickAmount) * 2
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        pickUpCost = int(pickUpCost) * 2
+        PickaxeUpgrade1.config(text= "Pickaxe $ " + str(pickUpCost))
+pickUpCost = 50
+
+PickaxeUpgrade1 = Button(window, text = "Pickaxe $ " + str(pickUpCost), font=fortniteFont, bd = '3', command = pickaxeUpgrade)
+PickaxeUpgrade1.place(x = 360, y = 115 )
+
+autoClickAmount = 0 
+def autoClick():
+    global autoClickAmount 
+    global money
+    money = money + autoClickAmount
+    moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+    threading.Timer(1.0, autoClick).start()
+autoClick()
+
+def onHenchEnter(e):
+    global henchCost
+    henchMenUpgrade.config(text="Cost: " + str(henchCost) + "\nPlus 5 To AutoClick")
+    
+
+def buyHenchMenUpgrade():
+    
+    global money
+    global henchCost
+    global autoClickAmount
+    if money >= henchCost:
+        canvas.itemconfig(imgHenchMen, state='normal')
+        money = int(money) - int(henchCost)
+        autoClickAmount = int(autoClickAmount) + 5
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        henchCost = int(henchCost) * 2
+        henchMenUpgrade.config(text= "HenchMen $ " + str(henchCost), font=fortniteFont, bd = '3', command = buyHenchMenUpgrade)
+henchCost = 1000
+
+henchMenUpgrade = Button(window, text = "HenchMen $ " + str(henchCost), font=fortniteFont, bd = '3', command = buyHenchMenUpgrade)
+henchMenUpgrade.place(x = 360, y = 150 )
+henchMenUpgrade.bind("<Enter>", onHenchEnter)
+
+imageHenchMen = Image.open('Henchmen.png').convert('RGBA')
+resizedHenchMen = imageHenchMen.resize((150, 150), Image.Resampling.LANCZOS)
+changedHenchMen = ImageTk.PhotoImage(resizedHenchMen)
+imgHenchMen = canvas.create_image(140, 300, image = changedHenchMen)
+canvas.itemconfig(imgHenchMen, state='hidden')
+window.mainloop()
+
+bluetetris.webp:
+---------------
+
+
+clicker.py:
+----------
+from tkinter import *
+from PIL import Image, ImageTk
+import time, threading
+from tkinter import font
+
+# Create a window
+window = Tk()
+
+# Set the window size
+window.geometry("600x900")
+
+# Set the background color of the window
+window.configure(bg = "white")
+
+# Create and place a canvas on the window
+canvas = Canvas(window, width=600, height=900, bg="light blue")
+canvas.place(x=0, y=0)
+
+
+fortniteFont = font.Font(family="Impact", size=11, weight=font.BOLD, slant=font.ITALIC)
+
+
+imageCookie = Image.open('vBucks.png').convert('RGBA')
+resizedCookie = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookie = ImageTk.PhotoImage(resizedCookie)
+imgCookie = canvas.create_image(250, 200, image = changedCookie)
+canvas.itemconfig(imgCookie, state='hidden')
+
+resizedCookieS3 = imageCookie.resize((100, 100), Image.Resampling.LANCZOS)
+changedCookieS3 = ImageTk.PhotoImage(resizedCookieS3)
+imgCookieS3 = canvas.create_image(250, 200, image = changedCookieS3)
+canvas.itemconfig(imgCookieS3, state='hidden')
+
+resizedCookieS2 = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookieS2 = ImageTk.PhotoImage(resizedCookieS2)
+imgCookieS2 = canvas.create_image(250, 200, image = changedCookieS2)
+canvas.itemconfig(imgCookieS2, state='hidden')
+
+resizedCookieS1 = imageCookie.resize((200, 200), Image.Resampling.LANCZOS)
+changedCookieS1 = ImageTk.PhotoImage(resizedCookieS1)
+imgCookieS1 = canvas.create_image(250, 200, image = changedCookieS1)
+canvas.itemconfig(imgCookieS1, state='normal')
+
+clickAmount = 1
+money = 0
+moneyText = StringVar()
+moneyText.set("💰: $ " + str(money) + "\n" + str(clickAmount))
+
+moneyLabel = Label(window, textvariable=moneyText,
+                    fg="blue", bg="pink", width=20)
+moneyLabel.place(x = 150, y = 2)
+
+clickAmount = 1
+def cookieClicked(e):
+    global imgCookie
+    global clickAmount
+    global money
+    global cookieStageNum
+    if e.num == 1:
+
+        runClickAnimation()
+        money = int(money) + int(clickAmount)
+        moneyText.set("💰: $ " + str(money) + "\n" + str(clickAmount))
+        
+cookieStageNum = 1
+def runClickAnimation():
+    global cookieStageNum
+
+    if cookieStageNum == 1:
+        canvas.itemconfig(imgCookie, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+    
+    if cookieStageNum == 2:
+        canvas.itemconfig(imgCookieS1, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 3:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS3, state='normal')
+    
+    if cookieStageNum == 4:
+        canvas.itemconfig(imgCookieS3, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 5:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+
+  
+    cookieStageNum = cookieStageNum + 1
+    if cookieStageNum == 6:
+        cookieStageNum = 1
+    else:
+        threading.Timer(0.05, runClickAnimation).start()
+
+def doTimerStuff():
+    global money
+
+    money = money + 1
+    moneyText.set("Player 1 money: " + str(money))
+
+    # Keep calling this function over and over
+    threading.Timer(1.0, doTimerStuff).start()
+
+canvas.tag_bind(imgCookieS1, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS2, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS3, "<Button-1>", cookieClicked)
+
+PickaxeUpgradeCost = 20
+def purchasePickaxeUpgrade():
+    global cost
+    global money
+    global clickAmount
+    global PickaxeUpgradeCost
+    PickaxeCost = 20
+    money = int(money) - int(PickaxeUpgradeCost) 
+    clickAmount = int(clickAmount) * 1.5
+    PickaxeUpgradeCost = PickaxeUpgradeCost * 1.25 
+
+    
+        
+def PickaxeStats():
+    global cost
+    global PickaxeUpgradeCost
+    cost = 0
+    cost = PickaxeUpgradeCost
+    purchasePickaxeUpgrade()
+    PickaxeUpgradeCost = int(cost) * 1.25 
+
+PickaxeUpgradeCost = 20
+cost = 0 
+imagePickaxe1 = Image.open('Pickaxe1.png').convert('RGBA')
+resizedPickaxe1 = imagePickaxe1.resize((50, 75), Image.Resampling.LANCZOS)
+changedPickaxe1 = ImageTk.PhotoImage(resizedPickaxe1)
+imgPickaxe1 = canvas.create_image(140, 130, image = changedPickaxe1)
+canvas.itemconfig(imgPickaxe1, state='normal')
+
+PickaxeUpgrade1 = Button(window, text = "PICKAXE\n" + str(PickaxeUpgradeCost), font=fortniteFont, bd = '3', command = purchasePickaxeUpgrade())
+PickaxeUpgrade1.place(x = 360, y = 115 )
+
+
+window.mainloop()
+
+Cookie.png:
+----------
+https://codehs.com/uploads/fbb38840bf2a8764c9380fb0a9e06ee8
+
+vBucks.png:
+----------
+https://codehs.com/uploads/4da5180ce2ea82eaa625e3ea6ff90f79
+
+mouse.png:
+---------
+https://codehs.com/uploads/05a158b85ed6ae51060746b6bd35e521
+
+Pickaxe1.png:
+------------
+https://codehs.com/uploads/94c60cd3101623b968d3003fbbede0ec
+
+clicker2.py:
+-----------
+from tkinter import *
+from PIL import Image, ImageTk
+import time, threading
+from tkinter import font
+
+
+
+# Create a window
+window = Tk()
+
+# Set the window size
+window.geometry("600x900")
+
+# Set the background color of the window
+window.configure(bg = "white")
+
+# Create and place a canvas on the window
+canvas = Canvas(window, width=600, height=900, bg="light blue")
+canvas.place(x=0, y=0)
+
+imageBG = Image.open('BackGround.jpg').convert('RGBA')
+resizedBG = imageBG.resize((700, 700), Image.Resampling.LANCZOS)
+changedBG = ImageTk.PhotoImage(resizedBG)
+imgBG = canvas.create_image(300, 300, image = changedBG)
+canvas.itemconfig(imgBG, state='normal')
+
+imageLA = Image.open('arrow.png').convert('RGBA')
+
+resizedLA = imageLA.resize((25, 25), Image.Resampling.LANCZOS)
+changedLA = ImageTk.PhotoImage(resizedLA)
+
+imageRA = Image.open('arrow.png').convert('RGBA')
+imageRA = imageRA.rotate(180)
+resizedRA = imageRA.resize((25, 25), Image.Resampling.LANCZOS)
+changedRA = ImageTk.PhotoImage(resizedRA)
+
+
+dropBox = canvas.create_rectangle(350, 95, 600, 900, fill="#e9d9ca", outline="#e9d9ca", width=4)
+smallDropBox = canvas.create_rectangle(595, 95, 600, 900, fill="#e9d9ca", outline="#e9d9ca", width=4)
+
+canvas.itemconfig(smallDropBox, state='hidden')
+
+
+fortniteFont = font.Font(family="Impact", size=11, weight=font.BOLD, slant=font.ITALIC)
+
+
+
+imageCookie = Image.open('vBucks.png').convert('RGBA')
+resizedCookie = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookie = ImageTk.PhotoImage(resizedCookie)
+imgCookie = canvas.create_image(200, 200, image = changedCookie)
+canvas.itemconfig(imgCookie, state='hidden')
+
+resizedCookieS3 = imageCookie.resize((100, 100), Image.Resampling.LANCZOS)
+changedCookieS3 = ImageTk.PhotoImage(resizedCookieS3)
+imgCookieS3 = canvas.create_image(200, 200, image = changedCookieS3)
+canvas.itemconfig(imgCookieS3, state='hidden')
+
+resizedCookieS2 = imageCookie.resize((150, 150), Image.Resampling.LANCZOS)
+changedCookieS2 = ImageTk.PhotoImage(resizedCookieS2)
+imgCookieS2 = canvas.create_image(200, 200, image = changedCookieS2)
+canvas.itemconfig(imgCookieS2, state='hidden')
+
+resizedCookieS1 = imageCookie.resize((200, 200), Image.Resampling.LANCZOS)
+changedCookieS1 = ImageTk.PhotoImage(resizedCookieS1)
+imgCookieS1 = canvas.create_image(200, 200, image = changedCookieS1)
+canvas.itemconfig(imgCookieS1, state='normal')
+
+clickAmount = 1
+money = 0
+moneyText = StringVar()
+moneyText.set("$ " + str(money))
+moneyLabel = Label(window, textvariable=moneyText,
+                    fg="black", bg="light Grey", width=28, font=fortniteFont)
+moneyLabel.config(anchor = W)
+moneyLabel.place(x = 20, y = 2)
+
+
+def cookieClicked(e):
+    global imgCookie
+    global clickAmount
+    global money
+    global cookieStageNum
+    if e.num == 1:
+
+        runClickAnimation()
+        money = int(money) + int(clickAmount)
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        
+cookieStageNum = 1
+def runClickAnimation():
+    global cookieStageNum
+
+    if cookieStageNum == 1:
+        canvas.itemconfig(imgCookie, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+    
+    if cookieStageNum == 2:
+        canvas.itemconfig(imgCookieS1, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 3:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS3, state='normal')
+    
+    if cookieStageNum == 4:
+        canvas.itemconfig(imgCookieS3, state='hidden')
+        canvas.itemconfig(imgCookieS2, state='normal')
+    
+    if cookieStageNum == 5:
+        canvas.itemconfig(imgCookieS2, state='hidden')
+        canvas.itemconfig(imgCookieS1, state='normal')
+
+  
+    cookieStageNum = cookieStageNum + 1
+    if cookieStageNum == 6:
+        cookieStageNum = 1
+    else:
+        threading.Timer(0.05, runClickAnimation).start()
+
+def doTimerStuff():
+    global money
+
+    money = money + 1
+    moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+
+    # Keep calling this function over and over
+    threading.Timer(1.0, doTimerStuff).start()
+
+canvas.tag_bind(imgCookieS1, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS2, "<Button-1>", cookieClicked)
+canvas.tag_bind(imgCookieS3, "<Button-1>", cookieClicked)
+
+imagePickaxe1 = Image.open('Pickaxe1.png').convert('RGBA')
+resizedPickaxe1 = imagePickaxe1.resize((50, 75), Image.Resampling.LANCZOS)
+changedPickaxe1 = ImageTk.PhotoImage(resizedPickaxe1)
+imgPickaxe1 = canvas.create_image(140, 130, image = changedPickaxe1)
+canvas.itemconfig(imgPickaxe1, state='hidden')
+
+def rightClose():
+    global leftArrow
+    global rightArrow
+    henchMenUpgrade.place_forget()
+    PickaxeUpgrade1.place_forget()
+    TacticoolUpgrade.place_forget()
+    peterGriffinUpgrade.place_forget()
+    lebronUpgrade.place_forget()
+    canvas.itemconfig(dropBox, state= 'hidden')
+    rightArrow.place_forget()
+    canvas.itemconfig(smallDropBox, state='normal')
+    leftArrow = Button(window, command = leftOpen)
+    leftArrow.config(image = changedLA)
+    leftArrow.place(x = 575, y = 300 )
+
+def leftOpen():
+    global leftArrow
+    global rightArrow
+    canvas.itemconfig(dropBox, state= 'normal')
+    rightArrow.place(x = 350, y = 300)
+    canvas.itemconfig(smallDropBox, state='hidden')
+    leftArrow.place_forget()
+    PickaxeUpgrade1.place(x = 400, y = 115 )
+    henchMenUpgrade.place(x = 400, y = 170 )
+    TacticoolUpgrade.place(x = 400, y = 225)
+    peterGriffinUpgrade.place(x= 400, y=280)
+    lebronUpgrade.place(x = 400, y = 335 )
+
+    
+  
+
+
+def pickaxeUpgrade():
+    
+    global money
+    global pickUpCost
+    global clickAmount
+    if money >= pickUpCost:
+        canvas.itemconfig(imgPickaxe1, state='normal')
+        money = int(money) - int(pickUpCost)
+        clickAmount = int(clickAmount) * 2
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        pickUpCost = int(pickUpCost) * 2
+        PickaxeUpgrade1.config(text= "Pickaxe")
+pickUpCost = 50
+
+PickaxeUpgrade1 = Button(window, text = "Pickaxe", font=fortniteFont, bd = '3', command = pickaxeUpgrade)
+PickaxeUpgrade1.place(x = 400, y = 115 )
+
+def onPickEnter(e):
+    global TacticoolCost
+    PickaxeUpgrade1.config(text="Cost: $" + str(pickUpCost) + "\nx2 Per Click")
+    
+def onPickLeave(e):
+    PickaxeUpgrade1.config(text= "Pickaxe", font=fortniteFont, bd = '3', command = pickaxeUpgrade)
+
+PickaxeUpgrade1.bind("<Enter>", onPickEnter)
+PickaxeUpgrade1.bind("<Leave>", onPickLeave)
+
+autoClickAmount = 0 
+def autoClick():
+    global autoClickAmount 
+    global money
+    money = money + autoClickAmount
+    moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+    threading.Timer(1.0, autoClick).start()
+autoClick()
+
+def onHenchEnter(e):
+    global henchCost
+    henchMenUpgrade.config(text="Cost: $" + str(henchCost) + "\n+$5 Per Second")
+    
+def onHenchLeave(e):
+    henchMenUpgrade.config(text= "HenchMen", font=fortniteFont, bd = '3', command = buyHenchMenUpgrade)
+
+rightArrow = Button(window, command = rightClose)
+rightArrow.config(image = changedRA )
+rightArrow.place(x = 350, y = 300 )
+
+
+
+def buyHenchMenUpgrade():
+    
+    global money
+    global henchCost
+    global autoClickAmount
+    if money >= henchCost:
+        canvas.itemconfig(imgHenchMen, state='normal')
+        money = int(money) - int(henchCost)
+        autoClickAmount = int(autoClickAmount) + 5
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        henchCost = int(henchCost) + 1000
+        henchMenUpgrade.config(text= "HenchMen", font=fortniteFont, bd = '3', command = buyHenchMenUpgrade)
+henchCost = 1000
+
+henchMenUpgrade = Button(window, text = "HenchMen", font=fortniteFont, bd = '3', command = buyHenchMenUpgrade)
+henchMenUpgrade.place(x = 400, y = 170 )
+henchMenUpgrade.bind("<Enter>", onHenchEnter)
+henchMenUpgrade.bind("<Leave>", onHenchLeave)
+
+imageHenchMen = Image.open('Henchmen.png').convert('RGBA')
+resizedHenchMen = imageHenchMen.resize((150, 150), Image.Resampling.LANCZOS)
+changedHenchMen = ImageTk.PhotoImage(resizedHenchMen)
+imgHenchMen = canvas.create_image(140, 300, image = changedHenchMen)
+canvas.itemconfig(imgHenchMen, state='hidden')
+
+def onTacticoolEnter(e):
+    global TacticoolCost
+    TacticoolUpgrade.config(text="Cost: $" + str(TacticoolCost) + "\n+$10 Per Second")
+    
+def onTacticoolLeave(e):
+    TacticoolUpgrade.config(text= "Tacticool", font=fortniteFont, bd = '3', command = buyTacticoolUpgrade)
+
+def buyTacticoolUpgrade():
+    
+    global money
+    global TacticoolCost
+    global autoClickAmount
+    if money >= TacticoolCost:
+        canvas.itemconfig(imgTacticool, state='normal')
+        money = int(money) - int(TacticoolCost)
+        autoClickAmount = int(autoClickAmount) + 10
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        TacticoolCost = int(TacticoolCost) * 2
+        TacticoolUpgrade.config(text= "Tacticool", font=fortniteFont, bd = '3', command = buyTacticoolUpgrade)
+TacticoolCost = 2000
+
+TacticoolUpgrade = Button(window, text = "Tacticool", font=fortniteFont, bd = '3', command = buyTacticoolUpgrade)
+TacticoolUpgrade.place(x = 400, y = 225 )
+TacticoolUpgrade.bind("<Enter>", onTacticoolEnter)
+TacticoolUpgrade.bind("<Leave>", onTacticoolLeave)
+
+imageTacticool = Image.open('Tacticool.png').convert('RGBA')
+resizedTacticool = imageTacticool.resize((150, 150), Image.Resampling.LANCZOS)
+changedTacticool = ImageTk.PhotoImage(resizedTacticool)
+imgTacticool = canvas.create_image(190, 300, image = changedTacticool)
+canvas.itemconfig(imgTacticool, state='hidden')
+
+def onpeterGriffinEnter(e):
+    global peterGriffinCost
+    peterGriffinUpgrade.config(text="Cost: $" + str(peterGriffinCost) + "\n+$50 Per Second")
+    
+def onpeterGriffinLeave(e):
+    peterGriffinUpgrade.config(text= "Peter Griffin", font=fortniteFont, bd = '3', command = buypeterGriffinUpgrade)
+
+def buypeterGriffinUpgrade():
+    
+    global money
+    global peterGriffinCost
+    global autoClickAmount
+    if money >= peterGriffinCost:
+        canvas.itemconfig(imgpeterGriffin, state='normal')
+        money = int(money) - int(peterGriffinCost)
+        autoClickAmount = int(autoClickAmount) + 50
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        peterGriffinCost = int(peterGriffinCost) * 2
+        peterGriffinUpgrade.config(text= "Peter Griffin", font=fortniteFont, bd = '3', command = buypeterGriffinUpgrade)
+peterGriffinCost = 25000
+
+peterGriffinUpgrade = Button(window, text = "Peter Griffin", font=fortniteFont, bd = '3', command = buypeterGriffinUpgrade)
+peterGriffinUpgrade.place(x = 400, y = 280 )
+peterGriffinUpgrade.bind("<Enter>", onpeterGriffinEnter)
+peterGriffinUpgrade.bind("<Leave>", onpeterGriffinLeave)
+
+imagepeterGriffin = Image.open('peterGriffin.png').convert('RGBA')
+resizedpeterGriffin = imagepeterGriffin.resize((150, 150), Image.Resampling.LANCZOS)
+changedpeterGriffin = ImageTk.PhotoImage(resizedpeterGriffin)
+imgpeterGriffin = canvas.create_image(50, 300, image = changedpeterGriffin)
+canvas.itemconfig(imgpeterGriffin, state='hidden')
+
+
+def onlebronEnter(e):
+    global lebronCost
+    lebronUpgrade.config(text="Cost: $" + str(lebronCost) + "\n+$500 Per Second")
+    
+def onlebronLeave(e):
+    lebronUpgrade.config(text= "Lebron James", font=fortniteFont, bd = '3', command = buylebronUpgrade)
+
+def buylebronUpgrade():
+    
+    global money
+    global lebronCost
+    global autoClickAmount
+    if money >= lebronCost:
+        canvas.itemconfig(imglebron, state='normal')
+        money = int(money) - int(lebronCost)
+        autoClickAmount = int(autoClickAmount) + 500
+        moneyText.set("$ " + str(money) + "\n $ Per Click: " + str(clickAmount) + "\n $ Per Second: " + str(autoClickAmount))
+        lebronCost = int(lebronCost) * 2
+        lebronUpgrade.config(text= "Lebron James", font=fortniteFont, bd = '3', command = buylebronUpgrade)
+lebronCost = 100000
+
+lebronUpgrade = Button(window, text = "Lebron James", font=fortniteFont, bd = '3', command = buylebronUpgrade)
+lebronUpgrade.place(x = 400, y = 335 )
+lebronUpgrade.bind("<Enter>", onlebronEnter)
+lebronUpgrade.bind("<Leave>", onlebronLeave)
+
+imagelebron = Image.open('lebron.png').convert('RGBA')
+resizedlebron = imagelebron.resize((125, 150), Image.Resampling.LANCZOS)
+changedlebron = ImageTk.PhotoImage(resizedlebron)
+imglebron = canvas.create_image(290, 300, image = changedlebron)
+canvas.itemconfig(imglebron, state='hidden')
+
+window.mainloop()
+
+Henchmen.png:
+------------
+https://codehs.com/uploads/178d95fe92197b2586fae7372ede4d76
+
+arrow.png:
+---------
+https://codehs.com/uploads/86183ea087c4f76f8e875ab1335c826b
+
+BackGround.jpg:
+--------------
+https://codehs.com/uploads/4359dad77735dc7055381583c32bc113
+
+Tacticool.png:
+-------------
+https://codehs.com/uploads/5c35d6fa2dab1d83be8a546fa16aae56
+
+peterGriffin.png:
+----------------
+https://codehs.com/uploads/7657b27497d06ca6f354f32d08f9c843
+
+lebron.png:
+----------
+https://codehs.com/uploads/30a080da3898dacfaa255517089620ae
+
